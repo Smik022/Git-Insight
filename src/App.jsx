@@ -2,20 +2,25 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import SearchBar from './components/SearchBar';
+import LoadingScreen from './components/LoadingScreen';
 import { fetchGitHubData } from './services/githubService';
 import { generateReport } from './services/insightEngine';
 
 function App() {
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState(null);
+  const [userData, setUserData] = useState(null);
   const [error, setError] = useState('');
 
   const handleSearch = async (username) => {
     setLoading(true);
     setError('');
     setReport(null);
+    setUserData(null);
     try {
       const rawData = await fetchGitHubData(username);
+      setUserData(rawData.user); // Store user data for the header
+
       const generatedReport = await generateReport(rawData);
       setReport(generatedReport);
     } catch (err) {
@@ -26,55 +31,191 @@ function App() {
   };
 
   return (
-    <div className="container" style={{ padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' }}>
-      <header style={{ textAlign: 'center', marginBottom: '60px' }}>
+    <div className="container" style={{ padding: '60px 20px', maxWidth: '1200px', margin: '0 auto', minHeight: '100vh' }}>
+      <header style={{ textAlign: 'center', marginBottom: '80px', animation: 'fadeIn 1s ease' }}>
         <h1 style={{
-          fontSize: '4rem',
-          background: 'linear-gradient(to right, var(--color-primary), var(--color-secondary))',
+          fontSize: '5rem',
+          fontWeight: '900',
+          letterSpacing: '-2px',
+          background: 'linear-gradient(135deg, var(--color-primary), #fff, var(--color-secondary))',
+          backgroundSize: '200% auto',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          marginBottom: '10px'
+          marginBottom: '20px',
+          animation: 'shine 5s linear infinite'
         }}>
           GIT INSIGHT
         </h1>
-        <p style={{ fontSize: '1.2rem', color: 'var(--color-text-muted)' }}>
-          AI-Powered Developer Assessment Engine
+        <p style={{ fontSize: '1.3rem', color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0 auto' }}>
+          Discover the untold story behind the code. AI-powered developer profiling.
         </p>
       </header>
 
-      <SearchBar onSearch={handleSearch} isLoading={loading} />
+      {!loading && !report && (
+        <div style={{ maxWidth: '600px', margin: '0 auto', animation: 'fadeInUp 0.6s ease' }}>
+          <SearchBar onSearch={handleSearch} isLoading={loading} />
+        </div>
+      )}
+
+      {loading && (
+        <div style={{ marginTop: '50px' }}>
+          <LoadingScreen />
+        </div>
+      )}
 
       {error && (
         <div style={{
+          maxWidth: '600px',
+          margin: '40px auto',
           padding: '20px',
           background: 'rgba(255, 50, 50, 0.1)',
           border: '1px solid rgba(255, 50, 50, 0.2)',
           color: '#ff6b6b',
           borderRadius: 'var(--radius-md)',
           textAlign: 'center',
-          marginTop: '20px'
+          animation: 'shake 0.5s ease'
         }}>
-          {error}
+          <strong>Error:</strong> {error}
         </div>
       )}
 
-      {report && (
-        <div className="glass-panel" style={{ marginTop: '40px', padding: '40px', lineHeight: '1.6' }}>
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              h1: ({ ...props }) => <h1 style={{ color: 'var(--color-primary)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginTop: '0' }} {...props} />,
-              h2: ({ ...props }) => <h2 style={{ color: 'var(--color-text-main)', marginTop: '30px', marginBottom: '15px' }} {...props} />,
-              strong: ({ ...props }) => <strong style={{ color: 'var(--color-secondary)' }} {...props} />,
-              ul: ({ ...props }) => <ul style={{ paddingLeft: '20px', color: 'var(--color-text-muted)' }} {...props} />,
-              li: ({ ...props }) => <li style={{ marginBottom: '8px' }} {...props} />,
-              p: ({ ...props }) => <p style={{ marginBottom: '16px', color: 'var(--color-text-muted)' }} {...props} />,
-            }}
-          >
-            {report}
-          </ReactMarkdown>
+      {/* Result Section */}
+      {report && userData && !loading && (
+        <div style={{ animation: 'fadeInUp 0.8s ease' }}>
+
+          {/* User Profile Header */}
+          <div className="glass-panel" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '30px',
+            padding: '40px',
+            marginBottom: '40px',
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+            border: '1px solid rgba(255,255,255,0.05)'
+          }}>
+            <img
+              src={userData.avatar_url}
+              alt={userData.login}
+              style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                border: '4px solid rgba(255,255,255,0.1)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+              }}
+            />
+            <div>
+              <h2 style={{ fontSize: '2.5rem', margin: '0 0 10px 0', color: '#fff' }}>
+                {userData.name || userData.login}
+              </h2>
+              <p style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)', marginBottom: '15px' }}>
+                {userData.bio || 'No bio available'}
+              </p>
+              <div style={{ display: 'flex', gap: '20px', fontSize: '0.9rem', color: 'var(--color-primary)' }}>
+                {userData.location && <span>📍 {userData.location}</span>}
+                {userData.company && <span>💼 {userData.company}</span>}
+                <a href={userData.html_url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dotted' }}>
+                  🔗 github.com/{userData.login}
+                </a>
+              </div>
+            </div>
+
+            <div style={{ marginLeft: 'auto', textAlign: 'right', display: 'none', '@media (min-width: 768px)': { display: 'block' } }}>
+              <div style={{ marginBottom: '10px' }}>
+                <span style={{ fontSize: '2rem', fontWeight: 'bold', color: '#fff' }}>{userData.public_repos}</span>
+                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Repositories</div>
+              </div>
+              <div>
+                <span style={{ fontSize: '2rem', fontWeight: 'bold', color: '#fff' }}>{userData.followers}</span>
+                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Followers</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Report Content */}
+          <div className="glass-panel" style={{ padding: '60px', lineHeight: '1.8', fontSize: '1.05rem' }}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h1: ({ ...props }) => (
+                  <h1 style={{
+                    color: 'var(--color-primary)',
+                    fontSize: '2.2rem',
+                    borderBottom: '2px solid rgba(255,255,255,0.05)',
+                    paddingBottom: '20px',
+                    marginTop: '0',
+                    marginBottom: '40px'
+                  }} {...props} />
+                ),
+                h2: ({ ...props }) => (
+                  <h2 style={{
+                    color: '#fff',
+                    fontSize: '1.6rem',
+                    marginTop: '50px',
+                    marginBottom: '25px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }} {...props} />
+                ),
+                strong: ({ ...props }) => <strong style={{ color: 'var(--color-secondary)', fontWeight: '600' }} {...props} />,
+                ul: ({ ...props }) => <ul style={{ paddingLeft: '20px', color: 'var(--color-text-muted)', marginBottom: '20px' }} {...props} />,
+                li: ({ ...props }) => <li style={{ marginBottom: '12px', position: 'relative' }} {...props} />,
+                p: ({ ...props }) => <p style={{ marginBottom: '20px', color: 'var(--color-text-muted)' }} {...props} />,
+                blockquote: ({ ...props }) => (
+                  <blockquote style={{
+                    borderLeft: '4px solid var(--color-primary)',
+                    margin: '30px 0',
+                    padding: '15px 30px',
+                    background: 'rgba(255,255,255,0.02)',
+                    color: '#ddd',
+                    fontStyle: 'italic'
+                  }} {...props} />
+                )
+              }}
+            >
+              {report}
+            </ReactMarkdown>
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: '60px' }}>
+            <button
+              onClick={() => { setReport(null); setUserData(null); }}
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--color-primary)',
+                color: 'var(--color-primary)',
+                padding: '12px 30px',
+                borderRadius: '30px',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => { e.target.style.background = 'var(--color-primary)'; e.target.style.color = '#fff'; }}
+              onMouseOut={(e) => { e.target.style.background = 'transparent'; e.target.style.color = 'var(--color-primary)'; }}
+            >
+              Analyze Another Profile
+            </button>
+          </div>
+
         </div>
       )}
+
+      <style>{`
+        @keyframes shine {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+      `}</style>
     </div>
   );
 }

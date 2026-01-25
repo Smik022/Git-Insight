@@ -35,39 +35,63 @@ You are an expert Senior Technical Recruiter and Engineering Manager. Analyze th
 - **Top repositories:** ${JSON.stringify(topRepos)}
 
 **Report Structure (Markdown):**
+IMPORTANT: Use bullet points for almost all sections to strictly ensure readability. Do not use long paragraphs.
 
 # Developer Profile Summary
-[A concise summary of their archetype (e.g., AI-Focused Full-Stack Developer), experience level (Junior/Intermediate/Senior), and core strengths. 2-3 sentences.]
+[A concise summary of their archetype (e.g., AI-Focused Full-Stack Developer), experience level (Junior/Intermediate/Senior), and core strengths. 2-3 sentences max.]
 
 ## Tech Stack Breakdown
-**Primary Languages**: [List with proficiency level inferred from usage]
-**Frameworks & Libraries**: [List detected frameworks e.g., React, Django, etc.]
-**Databases & Tools**: [Inferred from repos]
+**Primary Languages**:
+*   [Language 1] (Proficiency)
+*   [Language 2] (Proficiency)
+
+**Frameworks & Libraries**:
+*   [Framework 1]
+*   [Framework 2]
+
+**Databases & Tools**:
+*   [Tool 1]
+*   [Tool 2]
 
 ## Coding & Architecture Insights
-**Quality Indicators**: [Analyze if they use testing, CI/CD, documentation, security practices based on repo descriptions and topics]
-**Architectural Patterns**: [e.g., MVC, Microservices, Monolith - inferred from project structures if visible, or general approach]
-**Dominant Domains**: [e.g. EdTech, FinTech, AI/ML, Web Tools]
+**Quality Indicators**:
+*   [Indicator 1]
+*   [Indicator 2]
+
+**Architectural Patterns**:
+*   [Pattern 1]
+*   [Pattern 2]
+
+**Dominant Domains**:
+*   [Domain 1]
+*   [Domain 2]
 
 ## Notable Projects
-[Select 2-3 most impressive projects. For each, explain WHY it is notable (complexity, stars, tech stack).]
-- **[Project Name]**: [Description and analysis]
+[Select 2-3 most impressive projects. Use bullet points for details.]
+**[Project Name]**
+*   **Why Notable**: [Reason]
+*   **Tech**: [Stack]
 
 ## Strengths & Weaknesses
 **Strengths**:
-- [Strength 1]
-- [Strength 2]
+*   [Strength 1]
+*   [Strength 2]
 
 **Areas for Improvement**:
-- [Weakness 1]
-- [Weakness 2]
+*   [Weakness 1]
+*   [Weakness 2]
 
 ## Role Fit Suggestions
-**Best-Fit Roles**: [e.g. Frontend Engineer, ML Engineer]
-**Environment**: [Startup vs Enterprise]
+**Best-Fit Roles**:
+*   [Role 1]
+*   [Role 2]
+
+**Environment**:
+*   [Startup/Enterprise] - [Reason]
 
 **Suggested Next Steps**
-[Specific advice to improve their profile, e.g., "Add unit tests", "Contribute to open source"]
+*   [Step 1]
+*   [Step 2]
 
 *Disclaimer: Analysis based on public GitHub metadata.*
 `;
