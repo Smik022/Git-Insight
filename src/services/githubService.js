@@ -39,10 +39,6 @@ export const fetchGitHubData = async (username) => {
 
         // 4. Detailed Language Stats (Aggregate from repos)
         // This can be expensive (1 request per repo). We'll approximate from the top 10 non-fork repos.
-        const topRepos = repos
-            .filter(r => !r.fork)
-            .sort((a, b) => b.stargazers_count - a.stargazers_count)
-            .slice(0, 10);
 
         const languageMap = {};
 

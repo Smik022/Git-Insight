@@ -1,89 +1,97 @@
-/**
- * Heuristics to analyze GitHub data and generate insights.
- */
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Helper to determine experience level
-const determineExperience = (user, repos) => {
-    const accountAgeYears = (new Date() - new Date(user.created_at)) / (1000 * 60 * 60 * 24 * 365);
-    const totalStars = repos.reduce((acc, r) => acc + r.stargazers_count, 0);
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
-    if (accountAgeYears > 5 && totalStars > 50) return 'Advanced';
-    if (accountAgeYears > 2 || totalStars > 10) return 'Intermediate';
-    return 'Beginner';
-};
-
-// Helper to guess archetype
-const determineArchetype = (repos, languages) => {
-    const langKeys = Object.keys(languages);
-    const totalRepos = repos.length;
-
-    const hasLang = (lang) => langKeys.includes(lang);
-
-    if (hasLang('Jupyter Notebook') || hasLang('Python') && (hasLang('R') || hasLang('C++'))) {
-        return 'Data Scientist / ML Engineer';
-    }
-    if (hasLang('JavaScript') || hasLang('TypeScript') || hasLang('HTML') || hasLang('CSS')) {
-        if (hasLang('Python') || hasLang('Go') || hasLang('Java')) return 'Full-Stack Developer';
-        return 'Frontend Specialist';
-    }
-    if (hasLang('Go') || hasLang('Rust') || hasLang('C++') || hasLang('Java')) {
-        return 'Backend / Systems Engineer';
-    }
-    if (hasLang('Swift') || hasLang('Kotlin') || hasLang('Dart')) {
-        return 'Mobile Developer';
-    }
-    return 'Generalist Developer';
-};
-
-export const generateReport = (data) => {
+export const generateReport = async (data) => {
     const { user, repos, languageCount } = data;
 
-    const experienceLevel = determineExperience(user, repos);
-    const archetype = determineArchetype(repos, languageCount);
-
-    // 1. Archetype & Experience
-    const section1 = {
-        title: 'Developer Archetype & Experience',
-        content: {
-            type: archetype,
-            level: experienceLevel,
-            summary: `${user.name || user.login} shows strong signals of being a ${experienceLevel} ${archetype}. Active since ${new Date(user.created_at).getFullYear()} with ${user.public_repos} public repositories.`
-        }
-    };
-
-    // 2. Tech Stack
-    const sortedLangs = Object.entries(languageCount)
-        .sort(([, a], [, b]) => b - a)
-        .map(([lang]) => lang);
-
-    const section2 = {
-        title: 'Tech Stack & Tooling',
-        content: {
-            languages: sortedLangs.slice(0, 5),
-            details: repos.some(r => r.topics?.includes('react')) ? ['React Ecosystem detected'] : []
-        }
-    };
-
-    // 3. Project Analysis - Simple heuristic for "Notable"
-    const notableRepos = repos
-        .sort((a, b) => b.stargazers_count - a.stargazers_count)
-        .slice(0, 3)
+    // Prepare data for the prompt (summarize to avoid token limits)
+    const topRepos = repos
+        .sort((a, b) => b.stargazers_count - a.stargazers_count) // Sort by stars
+        .slice(0, 30) // Take top 30
         .map(r => ({
             name: r.name,
             description: r.description,
+            language: r.language,
+            topics: r.topics,
             stars: r.stargazers_count,
-            url: r.html_url,
-            language: r.language
+            updated_at: r.updated_at,
+            is_fork: r.fork
         }));
 
-    const section3 = {
-        title: ' Notable Projects',
-        content: notableRepos
-    };
+    const prompt = `
+You are an expert Senior Technical Recruiter and Engineering Manager. Analyze the following GitHub profile data and generate a comprehensive, professional developer insight report.
 
-    return {
-        archetype,
-        experienceLevel,
-        sections: [section1, section2, section3]
-    };
+**Target Audience:** Recruiters, Hiring Managers, and potential collaborators.
+**Tone:** Professional, objective, evidence-based, and insightful.
+
+**Input Data:**
+- **User:** ${user.name || user.login} (${user.bio || 'No bio'})
+- **Location:** ${user.location || 'Unknown'}
+- **Public Repos:** ${user.public_repos}
+- **Account Age:** Created at ${user.created_at}
+- **Followers:** ${user.followers}
+- **Language Distribution:** ${JSON.stringify(languageCount)}
+- **Top repositories:** ${JSON.stringify(topRepos)}
+
+**Report Structure (Markdown):**
+
+# Developer Profile Summary
+[A concise summary of their archetype (e.g., AI-Focused Full-Stack Developer), experience level (Junior/Intermediate/Senior), and core strengths. 2-3 sentences.]
+
+## Tech Stack Breakdown
+**Primary Languages**: [List with proficiency level inferred from usage]
+**Frameworks & Libraries**: [List detected frameworks e.g., React, Django, etc.]
+**Databases & Tools**: [Inferred from repos]
+
+## Coding & Architecture Insights
+**Quality Indicators**: [Analyze if they use testing, CI/CD, documentation, security practices based on repo descriptions and topics]
+**Architectural Patterns**: [e.g., MVC, Microservices, Monolith - inferred from project structures if visible, or general approach]
+**Dominant Domains**: [e.g. EdTech, FinTech, AI/ML, Web Tools]
+
+## Notable Projects
+[Select 2-3 most impressive projects. For each, explain WHY it is notable (complexity, stars, tech stack).]
+- **[Project Name]**: [Description and analysis]
+
+## Strengths & Weaknesses
+**Strengths**:
+- [Strength 1]
+- [Strength 2]
+
+**Areas for Improvement**:
+- [Weakness 1]
+- [Weakness 2]
+
+## Role Fit Suggestions
+**Best-Fit Roles**: [e.g. Frontend Engineer, ML Engineer]
+**Environment**: [Startup vs Enterprise]
+
+**Suggested Next Steps**
+[Specific advice to improve their profile, e.g., "Add unit tests", "Contribute to open source"]
+
+*Disclaimer: Analysis based on public GitHub metadata.*
+`;
+
+    try {
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey) {
+            console.error("VITE_GEMINI_API_KEY is missing/undefined");
+            throw new Error("API Key is missing. Please check your .env file.");
+        }
+        console.log("Attempting to generate report with Gemini...");
+
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        return text;
+    } catch (error) {
+        console.error("Gemini API Error Full Details:", error);
+        console.error("Error name:", error.name);
+        console.error("Error message:", error.message);
+        if (error.response) {
+            console.error("Error response:", await error.response.text());
+        }
+        return `# Error Generating Report\n\n**Error Details:** ${error.message}\n\nPlease check the console (F12) for more details.`;
+    }
 };

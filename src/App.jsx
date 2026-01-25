@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import SearchBar from './components/SearchBar';
-import InsightSection from './components/InsightSection';
 import { fetchGitHubData } from './services/githubService';
 import { generateReport } from './services/insightEngine';
 
@@ -15,7 +16,7 @@ function App() {
     setReport(null);
     try {
       const rawData = await fetchGitHubData(username);
-      const generatedReport = generateReport(rawData);
+      const generatedReport = await generateReport(rawData);
       setReport(generatedReport);
     } catch (err) {
       setError(err.message);
@@ -25,7 +26,7 @@ function App() {
   };
 
   return (
-    <div className="container" style={{ padding: '40px 20px' }}>
+    <div className="container" style={{ padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' }}>
       <header style={{ textAlign: 'center', marginBottom: '60px' }}>
         <h1 style={{
           fontSize: '4rem',
@@ -58,65 +59,20 @@ function App() {
       )}
 
       {report && (
-        <div style={{ marginTop: '40px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-            {/* Archetype Badge */}
-            <div className="glass-panel" style={{
-              padding: '20px',
-              textAlign: 'center',
-              gridColumn: '1 / -1',
-              background: 'linear-gradient(135deg, rgba(var(--hue-primary), 0.1) 0%, rgba(var(--hue-secondary), 0.1) 100%)'
-            }}>
-              <h2 style={{ fontSize: '2rem', color: 'var(--color-text-main)' }}>{report.archetype}</h2>
-              <span style={{
-                display: 'inline-block',
-                padding: '4px 12px',
-                background: 'var(--color-primary)',
-                color: '#fff',
-                borderRadius: '20px',
-                fontSize: '0.9rem',
-                marginTop: '8px'
-              }}>
-                {report.experienceLevel}
-              </span>
-            </div>
-
-            {report.sections.map((section, idx) => (
-              <InsightSection key={idx} title={section.title} delay={idx * 0.1}>
-                {section.title === ' Notable Projects' ? (
-                  <ul style={{ listStyle: 'none' }}>
-                    {section.content.map(repo => (
-                      <li key={repo.name} style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <a href={repo.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-primary)', fontSize: '1.1rem', fontWeight: 'bold' }}>
-                          {repo.name}
-                        </a>
-                        <p style={{ fontSize: '0.9rem', margin: '4px 0' }}>{repo.description || 'No description provided.'}</p>
-                        <div style={{ display: 'flex', gap: '10px', fontSize: '0.8rem' }}>
-                          <span>⭐ {repo.stars}</span>
-                          <span>{repo.language}</span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : section.title === 'Tech Stack & Tooling' ? (
-                  <div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
-                      {section.content.languages.map(lang => (
-                        <span key={lang} style={{ padding: '6px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
-                          {lang}
-                        </span>
-                      ))}
-                    </div>
-                    {section.content.details.map((detail, i) => (
-                      <p key={i} style={{ fontSize: '0.9rem', color: 'var(--color-secondary)' }}>• {detail}</p>
-                    ))}
-                  </div>
-                ) : (
-                  <p>{section.content.summary}</p>
-                )}
-              </InsightSection>
-            ))}
-          </div>
+        <div className="glass-panel" style={{ marginTop: '40px', padding: '40px', lineHeight: '1.6' }}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({ ...props }) => <h1 style={{ color: 'var(--color-primary)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px', marginTop: '0' }} {...props} />,
+              h2: ({ ...props }) => <h2 style={{ color: 'var(--color-text-main)', marginTop: '30px', marginBottom: '15px' }} {...props} />,
+              strong: ({ ...props }) => <strong style={{ color: 'var(--color-secondary)' }} {...props} />,
+              ul: ({ ...props }) => <ul style={{ paddingLeft: '20px', color: 'var(--color-text-muted)' }} {...props} />,
+              li: ({ ...props }) => <li style={{ marginBottom: '8px' }} {...props} />,
+              p: ({ ...props }) => <p style={{ marginBottom: '16px', color: 'var(--color-text-muted)' }} {...props} />,
+            }}
+          >
+            {report}
+          </ReactMarkdown>
         </div>
       )}
     </div>
