@@ -53,10 +53,20 @@ export const fetchGitHubData = async (username) => {
             }
         });
 
+        // 5. Social Accounts
+        let socialAccounts = [];
+        try {
+            const socialRes = await fetch(`${GITHUB_API_BASE}/users/${username}/social_accounts`, { headers });
+            if (socialRes.ok) socialAccounts = await socialRes.json();
+        } catch (e) {
+            console.warn('Failed to fetch social accounts', e);
+        }
+
         return {
             user,
             repos,
             events,
+            socialAccounts,
             languageCount: languageMap
         };
     } catch (error) {

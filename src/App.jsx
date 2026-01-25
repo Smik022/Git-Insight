@@ -26,7 +26,7 @@ function App() {
     setUserData(null);
     try {
       const rawData = await fetchGitHubData(username);
-      setUserData(rawData.user);
+      setUserData({ ...rawData.user, socialAccounts: rawData.socialAccounts });
 
       const generatedReport = await generateReport(rawData);
       setReport(generatedReport);
@@ -120,9 +120,29 @@ function App() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', fontSize: '0.85rem', color: 'var(--color-primary)' }}>
                 {userData.location && <span>📍 {userData.location}</span>}
                 {userData.company && <span>💼 {userData.company}</span>}
-                <a href={userData.html_url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
-                  🔗 github.com/{userData.login}
+
+                {/* Social Links */}
+                <a href={userData.html_url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  🔗 GitHub
                 </a>
+
+                {userData.blog && (
+                  <a href={userData.blog.startsWith('http') ? userData.blog : `https://${userData.blog}`} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    🌐 Website
+                  </a>
+                )}
+
+                {userData.socialAccounts && userData.socialAccounts.map((account, idx) => (
+                  <a key={idx} href={account.url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {account.provider === 'linkedin' && '💼 '}
+                    {account.provider === 'twitter' && '🐦 '}
+                    {account.provider === 'facebook' && '👥 '}
+                    {account.provider === 'youtube' && '📺 '}
+                    {account.provider === 'instagram' && '📸 '}
+                    {(!['linkedin', 'twitter', 'facebook', 'youtube', 'instagram'].includes(account.provider)) && '🔗 '}
+                    {account.provider.charAt(0) ? account.provider.charAt(0).toUpperCase() + account.provider.slice(1) : 'Link'}
+                  </a>
+                ))}
               </div>
             </div>
 
