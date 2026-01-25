@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { useState } from 'react';
 import SearchBar from './components/SearchBar';
 import LoadingScreen from './components/LoadingScreen';
+import {
+  SummaryCard,
+  TechStackCard,
+  StrengthsCard,
+  WeaknessesCard,
+  CodingInsightsCard,
+  ProjectsCard,
+  RoleFitCard
+} from './components/InsightCards';
 import { fetchGitHubData } from './services/githubService';
 import { generateReport } from './services/insightEngine';
 
@@ -19,7 +26,7 @@ function App() {
     setUserData(null);
     try {
       const rawData = await fetchGitHubData(username);
-      setUserData(rawData.user); // Store user data for the header
+      setUserData(rawData.user);
 
       const generatedReport = await generateReport(rawData);
       setReport(generatedReport);
@@ -31,8 +38,8 @@ function App() {
   };
 
   return (
-    <div className="container" style={{ padding: '60px 20px', maxWidth: '1200px', margin: '0 auto', minHeight: '100vh' }}>
-      <header style={{ textAlign: 'center', marginBottom: '80px', animation: 'fadeIn 1s ease' }}>
+    <div className="container" style={{ padding: '40px 20px', maxWidth: '1400px', margin: '0 auto', minHeight: '100vh' }}>
+      <header style={{ textAlign: 'center', marginBottom: '60px', animation: 'fadeIn 1s ease' }}>
         <h1 style={{
           fontSize: '5rem',
           fontWeight: '900',
@@ -79,17 +86,16 @@ function App() {
         </div>
       )}
 
-      {/* Result Section */}
       {report && userData && !loading && (
         <div style={{ animation: 'fadeInUp 0.8s ease' }}>
 
           {/* User Profile Header */}
-          <div className="glass-panel" style={{
+          <div className="glass-panel header-panel" style={{
             display: 'flex',
             alignItems: 'center',
             gap: '30px',
-            padding: '40px',
-            marginBottom: '40px',
+            padding: '30px',
+            marginBottom: '30px',
             background: 'linear-gradient(145deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
             border: '1px solid rgba(255,255,255,0.05)'
           }}>
@@ -97,85 +103,50 @@ function App() {
               src={userData.avatar_url}
               alt={userData.login}
               style={{
-                width: '120px',
-                height: '120px',
+                width: '100px',
+                height: '100px',
                 borderRadius: '50%',
-                border: '4px solid rgba(255,255,255,0.1)',
+                border: '3px solid rgba(255,255,255,0.1)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
               }}
             />
             <div>
-              <h2 style={{ fontSize: '2.5rem', margin: '0 0 10px 0', color: '#fff' }}>
+              <h2 style={{ fontSize: '2rem', margin: '0 0 5px 0', color: '#fff' }}>
                 {userData.name || userData.login}
               </h2>
-              <p style={{ fontSize: '1.1rem', color: 'var(--color-text-muted)', marginBottom: '15px' }}>
+              <p style={{ fontSize: '1rem', color: 'var(--color-text-muted)', marginBottom: '10px' }}>
                 {userData.bio || 'No bio available'}
               </p>
-              <div style={{ display: 'flex', gap: '20px', fontSize: '0.9rem', color: 'var(--color-primary)' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', fontSize: '0.85rem', color: 'var(--color-primary)' }}>
                 {userData.location && <span>📍 {userData.location}</span>}
                 {userData.company && <span>💼 {userData.company}</span>}
-                <a href={userData.html_url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dotted' }}>
+                <a href={userData.html_url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
                   🔗 github.com/{userData.login}
                 </a>
               </div>
             </div>
 
-            <div style={{ marginLeft: 'auto', textAlign: 'right', display: 'none', '@media (min-width: 768px)': { display: 'block' } }}>
+            <div className="stats-container" style={{ marginLeft: 'auto', textAlign: 'right' }}>
               <div style={{ marginBottom: '10px' }}>
-                <span style={{ fontSize: '2rem', fontWeight: 'bold', color: '#fff' }}>{userData.public_repos}</span>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Repositories</div>
+                <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#fff' }}>{userData.public_repos}</span>
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Repositories</div>
               </div>
               <div>
-                <span style={{ fontSize: '2rem', fontWeight: 'bold', color: '#fff' }}>{userData.followers}</span>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Followers</div>
+                <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#fff' }}>{userData.followers}</span>
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Followers</div>
               </div>
             </div>
           </div>
 
-          {/* Report Content */}
-          <div className="glass-panel" style={{ padding: '60px', lineHeight: '1.8', fontSize: '1.05rem' }}>
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                h1: ({ ...props }) => (
-                  <h1 style={{
-                    color: 'var(--color-primary)',
-                    fontSize: '2.2rem',
-                    borderBottom: '2px solid rgba(255,255,255,0.05)',
-                    paddingBottom: '20px',
-                    marginTop: '0',
-                    marginBottom: '40px'
-                  }} {...props} />
-                ),
-                h2: ({ ...props }) => (
-                  <h2 style={{
-                    color: '#fff',
-                    fontSize: '1.6rem',
-                    marginTop: '50px',
-                    marginBottom: '25px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px'
-                  }} {...props} />
-                ),
-                strong: ({ ...props }) => <strong style={{ color: 'var(--color-secondary)', fontWeight: '600' }} {...props} />,
-                ul: ({ ...props }) => <ul style={{ paddingLeft: '20px', color: 'var(--color-text-muted)', marginBottom: '20px' }} {...props} />,
-                li: ({ ...props }) => <li style={{ marginBottom: '12px', position: 'relative' }} {...props} />,
-                p: ({ ...props }) => <p style={{ marginBottom: '20px', color: 'var(--color-text-muted)' }} {...props} />,
-                blockquote: ({ ...props }) => (
-                  <blockquote style={{
-                    borderLeft: '4px solid var(--color-primary)',
-                    margin: '30px 0',
-                    padding: '15px 30px',
-                    background: 'rgba(255,255,255,0.02)',
-                    color: '#ddd',
-                    fontStyle: 'italic'
-                  }} {...props} />
-                )
-              }}
-            >
-              {report}
-            </ReactMarkdown>
+          {/* Grid Layout for Insights */}
+          <div className="insight-grid">
+            <SummaryCard data={report.summary} />
+            <TechStackCard data={report.techStack} />
+            <StrengthsCard data={report.strengths} />
+            <WeaknessesCard data={report.weaknesses} />
+            <CodingInsightsCard data={report.codingInsights} />
+            <ProjectsCard data={report.notableProjects} />
+            <RoleFitCard data={report.roleFit} />
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '60px' }}>
@@ -202,6 +173,42 @@ function App() {
       )}
 
       <style>{`
+        .insight-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            grid-template-areas: 
+                "summary"
+                "tech"
+                "strengths"
+                "weaknesses"
+                "insights"
+                "projects"
+                "rolefit";
+        }
+
+        @media (min-width: 768px) {
+            .insight-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-areas: 
+                    "summary summary"
+                    "tech tech"
+                    "strengths weaknesses"
+                    "insights projects"
+                    "rolefit rolefit";
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .insight-grid {
+                grid-template-columns: repeat(3, 1fr);
+                grid-template-areas: 
+                    "summary summary tech"
+                    "strengths weaknesses insights"
+                    "projects projects rolefit";
+            }
+        }
+
         @keyframes shine {
             0% { background-position: 0% center; }
             100% { background-position: 200% center; }
@@ -214,6 +221,11 @@ function App() {
             0%, 100% { transform: translateX(0); }
             20%, 60% { transform: translateX(-5px); }
             40%, 80% { transform: translateX(5px); }
+        }
+        
+        @media (max-width: 600px) {
+           .header-panel { flex-direction: column; text-align: center; }
+           .stats-container { margin-left: 0 !important; text-align: center !important; display: flex; gap: 20px; justify-content: center; width: 100%; margin-top: 20px; }
         }
       `}</style>
     </div>

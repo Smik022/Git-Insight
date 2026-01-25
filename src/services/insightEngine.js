@@ -5,10 +5,10 @@ const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 export const generateReport = async (data) => {
     const { user, repos, languageCount } = data;
 
-    // Prepare data for the prompt (summarize to avoid token limits)
+    // Prepare data for the prompt
     const topRepos = repos
-        .sort((a, b) => b.stargazers_count - a.stargazers_count) // Sort by stars
-        .slice(0, 30) // Take top 30
+        .sort((a, b) => b.stargazers_count - a.stargazers_count)
+        .slice(0, 30)
         .map(r => ({
             name: r.name,
             description: r.description,
@@ -16,14 +16,14 @@ export const generateReport = async (data) => {
             topics: r.topics,
             stars: r.stargazers_count,
             updated_at: r.updated_at,
-            is_fork: r.fork
+            fork: r.fork
         }));
 
     const prompt = `
-You are an expert Senior Technical Recruiter and Engineering Manager. Analyze the following GitHub profile data and generate a comprehensive, professional developer insight report.
+You are an expert Senior Technical Recruiter and Engineering Manager. Analyze the following GitHub profile data and generate a structured JSON report.
 
-**Target Audience:** Recruiters, Hiring Managers, and potential collaborators.
-**Tone:** Professional, objective, evidence-based, and insightful.
+**Target Audience:** Recruiters, Hiring Managers.
+**Tone:** Professional, objective, evidence-based.
 
 **Input Data:**
 - **User:** ${user.name || user.login} (${user.bio || 'No bio'})
@@ -34,66 +34,36 @@ You are an expert Senior Technical Recruiter and Engineering Manager. Analyze th
 - **Language Distribution:** ${JSON.stringify(languageCount)}
 - **Top repositories:** ${JSON.stringify(topRepos)}
 
-**Report Structure (Markdown):**
-IMPORTANT: Use bullet points for almost all sections to strictly ensure readability. Do not use long paragraphs.
+**Output Format:**
+Return ONLY a valid JSON object with the following schema. Do NOT include any markdown formatting (like \`\`\`json).
 
-# Developer Profile Summary
-[A concise summary of their archetype (e.g., AI-Focused Full-Stack Developer), experience level (Junior/Intermediate/Senior), and core strengths. 2-3 sentences max.]
-
-## Tech Stack Breakdown
-**Primary Languages**:
-*   [Language 1] (Proficiency)
-*   [Language 2] (Proficiency)
-
-**Frameworks & Libraries**:
-*   [Framework 1]
-*   [Framework 2]
-
-**Databases & Tools**:
-*   [Tool 1]
-*   [Tool 2]
-
-## Coding & Architecture Insights
-**Quality Indicators**:
-*   [Indicator 1]
-*   [Indicator 2]
-
-**Architectural Patterns**:
-*   [Pattern 1]
-*   [Pattern 2]
-
-**Dominant Domains**:
-*   [Domain 1]
-*   [Domain 2]
-
-## Notable Projects
-[Select 2-3 most impressive projects. Use bullet points for details.]
-**[Project Name]**
-*   **Why Notable**: [Reason]
-*   **Tech**: [Stack]
-
-## Strengths & Weaknesses
-**Strengths**:
-*   [Strength 1]
-*   [Strength 2]
-
-**Areas for Improvement**:
-*   [Weakness 1]
-*   [Weakness 2]
-
-## Role Fit Suggestions
-**Best-Fit Roles**:
-*   [Role 1]
-*   [Role 2]
-
-**Environment**:
-*   [Startup/Enterprise] - [Reason]
-
-**Suggested Next Steps**
-*   [Step 1]
-*   [Step 2]
-
-*Disclaimer: Analysis based on public GitHub metadata.*
+{
+  "summary": { 
+      "archetype": "string (e.g., AI-Focused Full-Stack Developer)", 
+      "level": "string (e.g., Senior)", 
+      "overview": "string (2-3 sentences)" 
+  },
+  "techStack": { 
+      "languages": ["string (e.g., Python (High))"], 
+      "frameworks": ["string"], 
+      "tools": ["string"] 
+  },
+  "codingInsights": { 
+      "quality": ["string"], 
+      "patterns": ["string"], 
+      "domains": ["string"] 
+  },
+  "notableProjects": [ 
+      { "name": "string", "why": "string", "tech": "string" } 
+  ],
+  "strengths": ["string"],
+  "weaknesses": ["string"],
+  "roleFit": { 
+      "roles": ["string"], 
+      "environment": "string" 
+  },
+  "nextSteps": ["string"]
+}
 `;
 
     try {
@@ -102,20 +72,24 @@ IMPORTANT: Use bullet points for almost all sections to strictly ensure readabil
             console.error("VITE_GEMINI_API_KEY is missing/undefined");
             throw new Error("API Key is missing. Please check your .env file.");
         }
-        console.log("Attempting to generate report with Gemini...");
+        console.log("Attempting to generate JSON report with Gemini...");
 
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
-        return text;
-    } catch (error) {
-        console.error("Gemini API Error Full Details:", error);
-        console.error("Error name:", error.name);
-        console.error("Error message:", error.message);
-        if (error.response) {
-            console.error("Error response:", await error.response.text());
+
+        // Clean up markdown code blocks if present
+        const jsonString = text.replace(/```json\n?|\n?```/g, "").trim();
+
+        try {
+            return JSON.parse(jsonString);
+        } catch {
+            console.error("Failed to parse JSON response:", text);
+            throw new Error("Failed to parse analysis results. Please try again.");
         }
-        return `# Error Generating Report\n\n**Error Details:** ${error.message}\n\nPlease check the console (F12) for more details.`;
+    } catch (error) {
+        console.error("Gemini API Error:", error);
+        throw error;
     }
 };

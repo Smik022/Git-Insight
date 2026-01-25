@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const InsightSection = ({ title, children, delay = 0 }) => {
     return (
