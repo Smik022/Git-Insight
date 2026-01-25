@@ -141,12 +141,12 @@ function App() {
           {/* Grid Layout for Insights */}
           <div className="insight-grid">
             <SummaryCard data={report.summary} />
-            <TechStackCard data={report.techStack} />
             <StrengthsCard data={report.strengths} />
-            <WeaknessesCard data={report.weaknesses} />
+            <TechStackCard data={report.techStack} />
             <CodingInsightsCard data={report.codingInsights} />
             <ProjectsCard data={report.notableProjects} />
             <RoleFitCard data={report.roleFit} />
+            <WeaknessesCard data={report.weaknesses} />
           </div>
 
           <div style={{ textAlign: 'center', marginTop: '60px' }}>
@@ -174,38 +174,27 @@ function App() {
 
       <style>{`
         .insight-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            grid-template-areas: 
-                "summary"
-                "tech"
-                "strengths"
-                "weaknesses"
-                "insights"
-                "projects"
-                "rolefit";
+            column-count: 1;
+            column-gap: 20px;
+            width: 100%;
+        }
+
+        .insight-grid > div {
+            break-inside: avoid;
+            margin-bottom: 20px;
+            display: inline-block;
+            width: 100%;
         }
 
         @media (min-width: 768px) {
             .insight-grid {
-                grid-template-columns: repeat(2, 1fr);
-                grid-template-areas: 
-                    "summary summary"
-                    "tech tech"
-                    "strengths weaknesses"
-                    "insights projects"
-                    "rolefit rolefit";
+                column-count: 2;
             }
         }
 
         @media (min-width: 1024px) {
             .insight-grid {
-                grid-template-columns: repeat(3, 1fr);
-                grid-template-areas: 
-                    "summary summary tech"
-                    "strengths weaknesses insights"
-                    "projects projects rolefit";
+                column-count: 3;
             }
         }
 

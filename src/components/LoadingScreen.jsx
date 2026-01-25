@@ -84,9 +84,6 @@ const LoadingScreen = () => {
                 }} />
             </div>
 
-            <p style={{ marginTop: '10px', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                {Math.round(progress)}% Complete
-            </p>
 
             <style>{`
                 @keyframes orbit {

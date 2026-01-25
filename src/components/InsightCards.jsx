@@ -45,53 +45,58 @@ export const SummaryCard = ({ data }) => (
         }}>
             {data.level}
         </div>
-        <p style={{ lineHeight: '1.6', fontSize: '1.1rem', color: 'var(--color-text-muted)' }}>
-            {data.overview}
-        </p>
+        <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '1rem', color: 'var(--color-text-muted)', lineHeight: '1.6' }}>
+            {Array.isArray(data.overview) ? data.overview.map((item, i) => (
+                <li key={i} style={{ marginBottom: '8px' }}>{item}</li>
+            )) : <li style={{ marginBottom: '8px' }}>{data.overview}</li>}
+        </ul>
     </Card>
 );
 
 export const TechStackCard = ({ data }) => (
     <Card title="Tech Stack" gridArea="tech">
         <div style={{ marginBottom: '20px' }}>
-            <strong style={{ color: '#fff', display: 'block', marginBottom: '8px' }}>Languages</strong>
+            <strong style={{ color: '#fff', display: 'block', marginBottom: '8px', fontSize: '0.9rem', opacity: 0.8 }}>Languages</strong>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {data.languages.map((lang, i) => (
                     <span key={i} style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        padding: '5px 10px',
-                        borderRadius: '5px',
-                        fontSize: '0.9rem',
-                        color: '#fff',
-                        border: '1px solid rgba(255,255,255,0.1)'
+                        background: 'hsla(var(--hue-primary), 90%, 60%, 0.05)',
+                        border: '1px solid hsla(var(--hue-primary), 90%, 60%, 0.3)',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '0.85rem',
+                        color: 'var(--color-primary)',
+                        fontWeight: '500'
                     }}>{lang}</span>
                 ))}
             </div>
         </div>
         <div style={{ marginBottom: '20px' }}>
-            <strong style={{ color: '#fff', display: 'block', marginBottom: '8px' }}>Frameworks</strong>
+            <strong style={{ color: '#fff', display: 'block', marginBottom: '8px', fontSize: '0.9rem', opacity: 0.8 }}>Frameworks</strong>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {data.frameworks.map((fw, i) => (
                     <span key={i} style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        padding: '5px 10px',
-                        borderRadius: '5px',
-                        fontSize: '0.9rem',
-                        color: '#ddd'
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '0.85rem',
+                        color: '#eee'
                     }}>{fw}</span>
                 ))}
             </div>
         </div>
         <div>
-            <strong style={{ color: '#fff', display: 'block', marginBottom: '8px' }}>Tools</strong>
+            <strong style={{ color: '#fff', display: 'block', marginBottom: '8px', fontSize: '0.9rem', opacity: 0.8 }}>Tools</strong>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {data.tools.map((t, i) => (
                     <span key={i} style={{
-                        background: 'rgba(255,255,255,0.05)',
-                        padding: '5px 10px',
-                        borderRadius: '5px',
-                        fontSize: '0.9rem',
-                        color: '#bbb'
+                        background: 'rgba(255,255,255,0.02)',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '0.85rem',
+                        color: '#aaa',
+                        border: '1px solid rgba(255,255,255,0.05)'
                     }}>{t}</span>
                 ))}
             </div>

@@ -41,7 +41,7 @@ Return ONLY a valid JSON object with the following schema. Do NOT include any ma
   "summary": { 
       "archetype": "string (e.g., AI-Focused Full-Stack Developer)", 
       "level": "string (e.g., Senior)", 
-      "overview": "string (2-3 sentences)" 
+      "overview": ["string (2-3 key points as bullet points)"] 
   },
   "techStack": { 
       "languages": ["string (e.g., Python (High))"], 
