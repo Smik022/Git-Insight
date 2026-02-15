@@ -1,7 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-
 export const generateReport = async (data) => {
     const { user, repos, languageCount } = data;
 
@@ -67,17 +63,21 @@ Return ONLY a valid JSON object with the following schema. Do NOT include any ma
 `;
 
     try {
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-        if (!apiKey) {
-            console.error("VITE_GEMINI_API_KEY is missing/undefined");
-            throw new Error("API Key is missing. Please check your .env file.");
-        }
-        console.log("Attempting to generate JSON report with Gemini...");
+        console.log("Attempting to generate JSON report via proxy...");
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        const response = await fetch('/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.details || 'Failed to generate report via proxy');
+        }
+
+        const data = await response.json();
+        const text = data.result;
 
         // Clean up markdown code blocks if present
         const jsonString = text.replace(/```json\n?|\n?```/g, "").trim();
@@ -89,7 +89,7 @@ Return ONLY a valid JSON object with the following schema. Do NOT include any ma
             throw new Error("Failed to parse analysis results. Please try again.");
         }
     } catch (error) {
-        console.error("Gemini API Error:", error);
+        console.error("Insight Engine Error:", error);
         throw error;
     }
 };
