@@ -1,12 +1,27 @@
 import { useState } from 'react';
 
+const extractUsername = (input) => {
+    const trimmed = input.trim();
+    try {
+        const url = new URL(trimmed);
+        if (url.hostname === 'github.com' || url.hostname === 'www.github.com') {
+            const parts = url.pathname.split('/').filter(Boolean);
+            if (parts.length >= 1) return parts[0];
+        }
+    } catch {
+        // Not a URL, treat as username
+    }
+    return trimmed;
+};
+
 const SearchBar = ({ onSearch, isLoading }) => {
     const [username, setUsername] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (username.trim()) {
-            onSearch(username.trim());
+        const parsed = extractUsername(username);
+        if (parsed) {
+            onSearch(parsed);
         }
     };
 
@@ -17,7 +32,7 @@ const SearchBar = ({ onSearch, isLoading }) => {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter GitHub Username..."
+                    placeholder="Enter GitHub Username or URL..."
                     disabled={isLoading}
                     style={{
                         width: '100%',
