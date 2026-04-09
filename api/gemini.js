@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     // Debug logs for terminal
     console.log("[Proxy Debug] API Key exists:", !!apiKey);
     console.log("[Proxy Debug] Prompt length:", prompt?.length || 0);
-    console.log("[Proxy Debug] Model:", "gemini-2.5-flash");
+    console.log("[Proxy Debug] Model:", "gemini-3.1-flash-lite");
 
     if (!prompt) {
         return res.status(400).json({ error: 'Prompt is required' });
@@ -23,7 +23,7 @@ export default async function handler(req, res) {
 
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite" });
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
