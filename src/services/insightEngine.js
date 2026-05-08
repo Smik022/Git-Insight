@@ -74,12 +74,13 @@ Return ONLY a valid JSON object with the following schema. Do NOT include any ma
         if (!response.ok) {
             const errorText = await response.text();
             console.error("Proxy Error Response:", errorText);
+            let errorJson = null;
             try {
-                const errorJson = JSON.parse(errorText);
-                throw new Error(errorJson.details || errorJson.error || 'Failed to generate report via proxy');
-            } catch (e) {
-                throw new Error(`Proxy Error (${response.status}): ${errorText.substring(0, 100)}...`);
+                errorJson = JSON.parse(errorText);
+            } catch {
+                throw new Error(`Proxy Error (${response.status}): ${errorText}`);
             }
+            throw new Error(errorJson.details || errorJson.error || `Proxy Error (${response.status})`);
         }
 
         const data = await response.json();
